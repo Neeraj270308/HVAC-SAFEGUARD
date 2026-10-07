@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply min-h-screen antialiased selection:bg-sky-200;
+    color: #1e293b;
+    background:
+      radial-gradient(ellipse at 8% 5%, rgba(186, 230, 253, .72), transparent 38%),
+      radial-gradient(ellipse at 94% 12%, rgba(221, 214, 254, .62), transparent 34%),
+      linear-gradient(140deg, #f8fbff 0%, #f6f5ff 48%, #fff8f4 100%);
+    background-attachment: fixed;
+  }
+}

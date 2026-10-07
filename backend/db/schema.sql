@@ -1,0 +1,50 @@
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(100) UNIQUE NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS sensor_logs (
+  id SERIAL PRIMARY KEY,
+  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  temperature FLOAT NOT NULL,
+  humidity FLOAT NOT NULL,
+  mq135_ppm FLOAT NOT NULL,
+  fan_status BOOLEAN NOT NULL DEFAULT FALSE,
+  device_id INTEGER
+);
+
+ALTER TABLE sensor_logs ADD COLUMN IF NOT EXISTS device_id INTEGER;
+
+CREATE TABLE IF NOT EXISTS devices (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  device_type VARCHAR(20) NOT NULL CHECK (device_type IN ('esp32', 'fan', 'filter')),
+  api_key_hash VARCHAR(64),
+  parent_device_id INTEGER REFERENCES devices(id) ON DELETE SET NULL,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  is_working BOOLEAN NOT NULL DEFAULT FALSE,
+  desired_fan_status BOOLEAN NOT NULL DEFAULT FALSE,
+  last_seen TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE devices ADD COLUMN IF NOT EXISTS api_key_hash VARCHAR(64);
+ALTER TABLE devices ADD COLUMN IF NOT EXISTS desired_fan_status BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE devices ADD COLUMN IF NOT EXISTS parent_device_id INTEGER REFERENCES devices(id) ON DELETE SET NULL;
+
+CREATE TABLE IF NOT EXISTS settings (
+  id SERIAL PRIMARY KEY,
+  auto_mode BOOLEAN NOT NULL DEFAULT TRUE,
+  temp_threshold FLOAT NOT NULL DEFAULT 28.0,
+  humidity_threshold FLOAT NOT NULL DEFAULT 60.0,
+  aqi_threshold FLOAT NOT NULL DEFAULT 400.0,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert default settings if they don't exist
+INSERT INTO settings (id, auto_mode, temp_threshold, humidity_threshold, aqi_threshold) 
+VALUES (1, TRUE, 28.0, 60.0, 400.0) 
+ON CONFLICT (id) DO NOTHING;
