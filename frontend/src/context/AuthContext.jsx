@@ -3,6 +3,18 @@ import axios from 'axios';
 
 axios.defaults.withCredentials = true;
 
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // If token expired, clear local storage and redirect to login
+      localStorage.removeItem('hvac_user');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
